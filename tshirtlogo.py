@@ -10,30 +10,13 @@ class Application(tk.Canvas):
     def __init__(self, master=None):
         super().__init__(master)
         self.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
-        # Button-1
-        #self.bind('<Motion>', self.motion) # bind mouse motion to
+        self.bind('<Motion>', self.mouseMotion) # bind mouse motion to
         self.curX = -1
         self.curY = -1
         self.bind('<Button-1>', self.click) # bind mouse motion to
+        root.bind('<Control-z>', self.undo)      # forward-slash
         self.pack(fill="both", expand=True)
-
-    def drawLine(self, x0, y0, x1, y1, lineIsVertical=False):
-        self.create_line(x0, y0, x1, y1, fill=config["wire_color"], width=6)
-        if lineIsVertical:
-            vOffset = 8; hOffset = 0
-        else:
-            vOffset = 0; hOffset = 8
-        #print(self.getLineAngle(x0, y0, x1, y1))
-        lineAngle = self.getLineAngle(x0, y0, x1, y1)
-        print(self.getLineDirection(x0, y0, x1, y1, lineAngle))
-        if config["has_start_node"]:
-            self.create_oval(x0-vOffset, y0-hOffset, x0+8-(hOffset*3), y0-16+(hOffset*3), width=6, outline=config["wire_color"])
-        if config["has_end_node"]:
-            self.create_oval(x1-vOffset, y1-hOffset, x1+8+hOffset, y1+16-hOffset, width=6, outline=config["wire_color"])
-        if config["has_start_module"]:
-            self.create_rectangle(x0-(2*vOffset), y0-(2*hOffset), x0+14-(3.75*hOffset), y0-16+(3.75*hOffset), outline=config["wire_color"], fill=config["wire_color"])
-        if config["has_end_module"]:
-            self.create_rectangle(x1-(vOffset*1.75), y1-(hOffset*1.75), x1+14+(hOffset/4), y1+16-(hOffset/4), outline=config["wire_color"], fill=config["wire_color"])
+        self.lines = []
 
     def click(self, event):
         x, y = event.x, event.y
@@ -41,45 +24,38 @@ class Application(tk.Canvas):
             self.curX = x
             self.curY = y
         else:
-            self.drawLine(self.curX, self.curY, x, y)
+            # color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False
+            self.lines.append(LineGraphic(self, self.curX, self.curY, x, y, config["wire_color"], config["has_start_node"], config["has_end_node"], config["has_start_module"], config["has_end_module"]))
+            self.refreshCanvas()
             self.curX = -1
             self.curY = -1
 
-    # Lines angle is determined by the angle between two vertexes in line
-    # Graph quadrant (in direction of circle) ranges: I: 0 to -90 exclusive, II: 90 exclusive to 0, III: 0 to -90 exclusive, IV: 90 exclusive to 0
-    def getLineAngle(self, x0, y0, x1, y1):
-        if (x0 == x1):
-            if (y0 == y1):
-                return -1
-            if (y0 > y1):
-                return 90.0
-            return 270.0
-        if (y0 == y1):
-            if (x0 > x1):
-                return 180.0
-            return 0.0
-        atanDegrees = degrees(atan((y1-y0)/(x1-x0)))
+    def clearCanvas(self):
+        self.delete("all")
 
-        if (y1 < y0):
-            if (atanDegrees < 0.0):
-                return abs(atanDegrees)
-            return 90.0 + (90.0 - atanDegrees)
-        else:
-            if (atanDegrees < 0.0):
-                return 180.0 + abs(atanDegrees)
-            return 270.0 + (90.0 - atanDegrees)
-    
-    # 0, 1, 2, 3 for up, right, down, left
-    def getLineDirection(self, x0, y0, x1, y1, angle):
-        if ((y0 > y1) & (angle >= 0) & (angle <= 45.0)):
-            return 3
-        if ((y0 < y1) & (angle < 0) & (angle >= -45.0)):
-            return 3
-        if ((y1 > y0) & (angle < -45)):
-            return 2
-        if ((y1 > y0) & (angle < 45) & (angle > 0)):
-            return 2
-        return 0
+    def mouseMotion(self, event):
+        if self.curX != -1:
+            print("asdf")
+            self.refreshCanvas()
+            line = LineGraphic(self, self.curX, self.curY, event.x, event.y, config["wire_color"], config["has_start_node"], config["has_end_node"], config["has_start_module"], config["has_end_module"], stipple="gray50")
+            line.drawLine()
+            self.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT) # Fixes bug where color trail is left on the canvas
+            #self.clearCanvas()
+            # draw the line queue
+            #self.drawLine(self.curX, self.curY, event.x, event.y)
+
+    def drawLines(self):
+        for line in self.lines:
+            line.drawLine()
+
+    def refreshCanvas(self):
+        self.clearCanvas()
+        self.drawLines()
+
+    def undo(self, event):
+        if (len(self.lines) > 0):
+            self.lines.pop()
+            self.refreshCanvas()
         
 
 class Settings(tk.Frame):
@@ -151,11 +127,104 @@ class Settings(tk.Frame):
             config["wire_color"] = color
             self.wireColorButton = Button(self, text='     ', command=self.setWireColor, bg=config["wire_color"]).grid(row = 1, column = 4)
 
+class LineGraphic():
+    def __init__(self, master, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, stipple=""):
+        self.x0 = x0
+        self.y0 = y0
+        self.x1 = x1
+        self.y1 = y1
+        self.color = color
+        self.stipple = stipple
+        self.hasStartNode = hasStartNode
+        self.hasEndNode = hasEndNode
+        self.hasStartModule = hasStartModule
+        self.hasEndModule = hasEndModule
+        self.canvas = master
+
+    def drawLine(self):
+        self.canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=self.stipple)
+        lineDirection = self.getLineDirection()
+        
+        if self.hasStartNode:
+            self.drawVertexShape(self.x0, self.y0, 16, 16, self.getOppositeDirection(lineDirection), "node")
+        if self.hasEndNode:
+            self.drawVertexShape(self.x1, self.y1, 16, 16, lineDirection, "node")
+        if self.hasStartModule:
+            self.drawVertexShape(self.x0, self.y0, 32, 16, self.getOppositeDirection(lineDirection), "module")
+        if self.hasEndModule:
+            self.drawVertexShape(self.x1, self.y1, 32, 16, lineDirection, "module")
+
+    def drawVertexShape(self, x, y, width, height, direction, shape):
+        negator = 1
+        if ((direction == 3) | (direction == 0)):
+            negator *= -1
+
+        if ((direction == 1) | (direction == 3)):
+            x0Diff = 0 * negator
+            y0Diff = -1 * width/2 * negator
+            x1Diff = height * negator
+            y1Diff = width/2 * negator
+        else:
+            x0Diff = width/2 * negator
+            y0Diff = 0 * negator
+            x1Diff = -1 * width/2  * negator
+            y1Diff = height * negator
+        if (shape == "node"):
+            self.canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, outline=self.color) 
+        if (shape == "module"):
+            self.canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=self.stipple, fill=self.color)
+        
+    def getOppositeDirection(self, lineDirection):
+        #print(lineDirection)
+        if (lineDirection == 0):
+            return 2
+        elif (lineDirection == 1):
+            return 3
+        elif (lineDirection == 2):
+            return 0
+        elif (lineDirection == 3):
+            return 1
+
+    # Lines angle is determined by the angle between two vertexes in line
+    # Graph quadrant (in direction of circle) ranges: I: 0 to -90 exclusive, II: 90 exclusive to 0, III: 0 to -90 exclusive, IV: 90 exclusive to 0
+    def getLineAngle(self):
+        if (self.x0 == self.x1):
+            if (self.y0 == self.y1):
+                return -1
+            if (self.y0 > self.y1):
+                return 90.0
+            return 270.0
+        if (self.y0 == self.y1):
+            if (self.x0 > self.x1):
+                return 180.0
+            return 0.0
+        atanDegrees = degrees(atan((self.y1-self.y0)/(self.x1-self.x0)))
+
+        if (self.y1 < self.y0):
+            if (atanDegrees < 0.0):
+                return abs(atanDegrees)
+            return 90.0 + (90.0 - atanDegrees)
+        else:
+            if (atanDegrees < 0.0):
+                return 180.0 + abs(atanDegrees)
+            return 270.0 + (90.0 - atanDegrees)
+    
+    # 0, 1, 2, 3 for up, right, down, left
+    def getLineDirection(self):
+        angle = self.getLineAngle()
+        if ((angle > 45.0) & (angle < 135.0)):
+            return 0
+        if ((angle >= 315.0) or ((angle > 0.0) & (angle <= 45.0))):
+            return 1
+        if ((angle >= 135.0) & (angle <= 225.0)):
+            return 3
+        return 2
+
 root = tk.Tk()
 root.title("Computer Sciece Department Graphic")
-app = Application(master=root)
-second_win = tk.Toplevel(root)
-second_win.title("Settings")
-app2 = Settings(second_win)
+Application(master=root)
+settingsWindowConfig = tk.Toplevel(root)
+settingsWindowConfig.title("Settings")
+Settings(settingsWindowConfig)
 
 root.mainloop()
