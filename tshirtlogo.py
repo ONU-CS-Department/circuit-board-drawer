@@ -45,16 +45,40 @@ class Application(tk.Canvas):
             self.curX = -1
             self.curY = -1
 
+    # Lines angle is determined by the angle between two vertexes in line
+    # Graph quadrant (in direction of circle) ranges: I: 0 to -90 exclusive, II: 90 exclusive to 0, III: 0 to -90 exclusive, IV: 90 exclusive to 0
     def getLineAngle(self, x0, y0, x1, y1):
         if (x0 == x1):
-            return 180.0
-        return degrees(atan((y1-y0)/(x1-x0)))
+            if (y0 == y1):
+                return -1
+            if (y0 > y1):
+                return 90.0
+            return 270.0
+        if (y0 == y1):
+            if (x0 > x1):
+                return 180.0
+            return 0.0
+        atanDegrees = degrees(atan((y1-y0)/(x1-x0)))
+
+        if (y1 < y0):
+            if (atanDegrees < 0.0):
+                return abs(atanDegrees)
+            return 90.0 + (90.0 - atanDegrees)
+        else:
+            if (atanDegrees < 0.0):
+                return 180.0 + abs(atanDegrees)
+            return 270.0 + (90.0 - atanDegrees)
+    
     # 0, 1, 2, 3 for up, right, down, left
     def getLineDirection(self, x0, y0, x1, y1, angle):
         if ((y0 > y1) & (angle >= 0) & (angle <= 45.0)):
             return 3
         if ((y0 < y1) & (angle < 0) & (angle >= -45.0)):
             return 3
+        if ((y1 > y0) & (angle < -45)):
+            return 2
+        if ((y1 > y0) & (angle < 45) & (angle > 0)):
+            return 2
         return 0
         
 
