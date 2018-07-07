@@ -1,131 +1,91 @@
 import tkinter as tk
-from tkinter import Button, Label, Entry, LEFT, StringVar, N, S, E, W, Frame, X, Scale, HORIZONTAL
-from tkinter.colorchooser import *
-from math import atan, degrees
+from tkinter import Button, Label, Entry, Frame, Checkbutton, Menu, filedialog, TclError
+from math import atan2, degrees
+import json
+from settings import Settings
+from config import Config
 
-config = {"background_color": "#005500", "wire_color": "#C5A953", "has_start_node": False, "has_end_node": False, "has_start_module": False, "has_end_module": False}
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 400
+workingFileName = ""
+
 class Application(tk.Canvas):
-    def __init__(self, master=None):
+    def __init__(self, settings=None, master=None):
         super().__init__(master)
-        self.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+        self.settings = settings
+        self.config(background=self.settings.get("bgColor"), width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+        self.settings.registerFunction("bgColor", self.refreshBackground)
         self.bind('<Motion>', self.mouseMotion) # bind mouse motion to
         self.curX = -1
         self.curY = -1
         self.bind('<Button-1>', self.click) # bind mouse motion to
         root.bind('<Control-z>', self.undo)      # forward-slash
+        menubar = Menu(root)
+        menubar.add_command(label="Undo", command=self.undo)
+        root.config(menu=menubar)
         self.pack(fill="both", expand=True)
         self.lines = []
 
     def click(self, event):
         x, y = event.x, event.y
-        if self.curX == -1:
+        if self.curX == -1:         # If this is the first click of the line.
             self.curX = x
             self.curY = y
         else:
-            # color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False
-            self.lines.append(LineGraphic(self, self.curX, self.curY, x, y, config["wire_color"], config["has_start_node"], config["has_end_node"], config["has_start_module"], config["has_end_module"]))
+            self.lines.append(LineGraphic(self, self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
             self.refreshCanvas()
-            self.curX = -1
-            self.curY = -1
+            if (self.settings.get("isContinuous")):
+                self.curX = x
+                self.curY = y
+            else:
+                self.curX = -1
+                self.curY = -1
 
-    def clearCanvas(self):
+    def refreshBackground(self):
+        try:
+            self.config(background=self.settings.get("bgColor"), width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+        except TclError: pass
+
+    def clearCanvas(self):  # Clear all graphics from the canvas
         self.delete("all")
 
-    def mouseMotion(self, event):
-        if self.curX != -1:
-            print("asdf")
+    def mouseMotion(self, event):   # Triggered every time the mouse moves across the canvas
+        if self.curX != -1:         # If the first vertex is already chosen, allow the other vertex to follow the mouse until a click event
             self.refreshCanvas()
-            line = LineGraphic(self, self.curX, self.curY, event.x, event.y, config["wire_color"], config["has_start_node"], config["has_end_node"], config["has_start_module"], config["has_end_module"], stipple="gray50")
-            line.drawLine()
-            self.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT) # Fixes bug where color trail is left on the canvas
-            #self.clearCanvas()
-            # draw the line queue
-            #self.drawLine(self.curX, self.curY, event.x, event.y)
+            line = LineGraphic(self, self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
+            line.drawLine(stipple="gray50")
 
-    def drawLines(self):
+    def openFile(self):
+        fileName = filedialog.askopenfilename()
+        print(fileName)
+
+    def saveFile(self):
+        fileName = filedialog.askopenfilename()
+        
+        print(fileName)
+
+    def saveFileAs(self):
+        fileName = filedialog.asksaveasfilename(filetypes = (("Data File","*.dat"),("all files","*.*")))
+        workingFileName = fileName
+        self.writeArrayToFile(self.lines, workingFileName)
+
+    def writeArrayToFile(self, array, fileName):
+        with open(fileName, 'w+') as outfile:
+            json.dump(array, outfile)
+
+    def drawLines(self):            # Draw all graphics to the screen in FIFO order
         for line in self.lines:
             line.drawLine()
 
-    def refreshCanvas(self):
+    def refreshCanvas(self):        # Clear the canvas and draw the lines
         self.clearCanvas()
         self.drawLines()
 
-    def undo(self, event):
-        if (len(self.lines) > 0):
+    def undo(self, event=None):     # Remove the previously drawn graphic
+        #self.saveFileAs()
+        if (self.lines):
             self.lines.pop()
             self.refreshCanvas()
-        
-
-class Settings(tk.Frame):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.grid(row=0, columnspan=4)
-        Label(self, text = 'Background color:').grid(row = 0, column = 1)
-        self.backgroundColorField = StringVar(self, value=config["background_color"])
-        self.updateBackgroundColor = self.register(self.backgroundEntryChanged)
-        self.backgroundEntry = Entry(self, textvariable=self.backgroundColorField, width=15, validate='all', validatecommand=(self.updateBackgroundColor, '%d', '%S'))
-        self.backgroundEntry.grid(row = 0, column = 3)
-        self.backgroundColorButton = Button(self, text='     ', command=self.setBackgroundColor, bg=config["background_color"])
-        self.backgroundColorButton.grid(row = 0, column = 4)
-
-        Label(self, text = 'Draw color:').grid(row = 1, column = 1)
-        self.wireColorField = StringVar(self, value=config["wire_color"])
-        self.updateWireColor = self.register(self.wireEntryChanged)
-        self.wireEntry = Entry(self, textvariable=self.wireColorField, width=15, validate='all', validatecommand=(self.updateWireColor, '%d', '%S'))
-        self.wireEntry.grid(row = 1, column = 3)
-        self.wireColorButton = Button(self, text='     ', command=self.setWireColor, bg=config["wire_color"])
-        self.wireColorButton.grid(row = 1, column = 4)
-
-        self.addToggleSlider(2, "has_start_node")
-        self.addToggleSlider(3, "has_end_node")
-        self.addToggleSlider(4, "has_start_module")
-        self.addToggleSlider(5, "has_end_module")
-
-    def addToggleSlider(self, row, value):
-        Label(self, text = value.replace("_", " ").title()).grid(row = row, column = 1)
-        self.scale = Scale(self, from_=0, to=1, orient=HORIZONTAL, showvalue=0, command=lambda label: self.sliderMoved(value)).grid(row=row, column=3)
-        self.pack()
-
-    def sliderMoved(self, value):
-        config[value] = not config[value]
-
-    def backgroundEntryChanged(self, isInsertion, text):
-        if isInsertion == "1":
-            config["background_color"] += text
-        elif isInsertion == "0":
-            config["background_color"] = config["background_color"][:(-1 * len(text))]
-        try:
-            app.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
-            self.backgroundColorButton = Button(self, text='     ', command=self.setBackgroundColor, bg=config["background_color"]).grid(row = 0, column = 4)
-        finally:
-            return True
-
-    def wireEntryChanged(self, isInsertion, text):
-        if isInsertion == "1":
-            config["wire_color"] += text
-        elif isInsertion == "0":
-            config["wire_color"] = config["wire_color"][:(-1 * len(text))]
-        try:
-            self.wireColorButton = Button(self, text='     ', command=self.setWireColor, bg=config["wire_color"]).grid(row = 1, column = 4)
-        finally:
-            return True
-
-    def setBackgroundColor(self):
-        color = askcolor(config["background_color"])[1]
-        if color:
-            self.backgroundColorField.set(color)
-            config["background_color"] = color
-            app.config(background=config["background_color"], width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
-            self.backgroundColorButton = Button(self, text='     ', command=self.setBackgroundColor, bg=config["background_color"]).grid(row = 0, column = 4)
-
-    def setWireColor(self):
-        color = askcolor(config["wire_color"])[1]
-        if color:
-            self.wireColorField.set(color)
-            config["wire_color"] = color
-            self.wireColorButton = Button(self, text='     ', command=self.setWireColor, bg=config["wire_color"]).grid(row = 1, column = 4)
 
 class LineGraphic():
     def __init__(self, master, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, stipple=""):
@@ -134,27 +94,30 @@ class LineGraphic():
         self.x1 = x1
         self.y1 = y1
         self.color = color
-        self.stipple = stipple
         self.hasStartNode = hasStartNode
         self.hasEndNode = hasEndNode
         self.hasStartModule = hasStartModule
         self.hasEndModule = hasEndModule
         self.canvas = master
 
-    def drawLine(self):
-        self.canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=self.stipple)
+    def drawLine(self, stipple=""):
+        self.canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=stipple)
         lineDirection = self.getLineDirection()
+
+        nodeSize = 16
+        if (stipple != ""): # when node is not transparent
+            nodeSize = 19
         
         if self.hasStartNode:
-            self.drawVertexShape(self.x0, self.y0, 16, 16, self.getOppositeDirection(lineDirection), "node")
+            self.drawVertexShape(self.x0, self.y0, nodeSize, nodeSize, self.getOppositeDirection(lineDirection), "node", stipple)
         if self.hasEndNode:
-            self.drawVertexShape(self.x1, self.y1, 16, 16, lineDirection, "node")
+            self.drawVertexShape(self.x1, self.y1, nodeSize, nodeSize, lineDirection, "node", stipple)
         if self.hasStartModule:
-            self.drawVertexShape(self.x0, self.y0, 32, 16, self.getOppositeDirection(lineDirection), "module")
+            self.drawVertexShape(self.x0, self.y0, 16, 32, self.getOppositeDirection(lineDirection), "module", stipple)
         if self.hasEndModule:
-            self.drawVertexShape(self.x1, self.y1, 32, 16, lineDirection, "module")
+            self.drawVertexShape(self.x1, self.y1, 16, 32, lineDirection, "module", stipple)
 
-    def drawVertexShape(self, x, y, width, height, direction, shape):
+    def drawVertexShape(self, x, y, width, height, direction, shape, stipple=""):
         negator = 1
         if ((direction == 3) | (direction == 0)):
             negator *= -1
@@ -169,45 +132,30 @@ class LineGraphic():
             y0Diff = 0 * negator
             x1Diff = -1 * width/2  * negator
             y1Diff = height * negator
-        if (shape == "node"):
-            self.canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, outline=self.color) 
-        if (shape == "module"):
-            self.canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=self.stipple, fill=self.color)
+        if (shape == "node"): # Returing not for values, but to conserve space on this t-shirt :)
+            if (stipple != ""): # create_oval doesn't allow transparency, so we must use "create_polygon" to make 
+                self.canvas.create_polygon(x + x0Diff, y + y0Diff,x + x0Diff, y + y1Diff, x + x1Diff, y + y1Diff, x + x1Diff, y + y0Diff, outline=self.color, smooth=1, stipple=stipple, fill=self.color)
+            else:
+                self.canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, stipple=stipple, outline=self.color)
+        else:
+            self.canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=stipple, fill=self.color)
         
     def getOppositeDirection(self, lineDirection):
-        #print(lineDirection)
         if (lineDirection == 0):
             return 2
         elif (lineDirection == 1):
             return 3
         elif (lineDirection == 2):
             return 0
-        elif (lineDirection == 3):
-            return 1
+        return 1
 
     # Lines angle is determined by the angle between two vertexes in line
     # Graph quadrant (in direction of circle) ranges: I: 0 to -90 exclusive, II: 90 exclusive to 0, III: 0 to -90 exclusive, IV: 90 exclusive to 0
     def getLineAngle(self):
-        if (self.x0 == self.x1):
-            if (self.y0 == self.y1):
-                return -1
-            if (self.y0 > self.y1):
-                return 90.0
-            return 270.0
-        if (self.y0 == self.y1):
-            if (self.x0 > self.x1):
-                return 180.0
-            return 0.0
-        atanDegrees = degrees(atan((self.y1-self.y0)/(self.x1-self.x0)))
-
-        if (self.y1 < self.y0):
-            if (atanDegrees < 0.0):
-                return abs(atanDegrees)
-            return 90.0 + (90.0 - atanDegrees)
-        else:
-            if (atanDegrees < 0.0):
-                return 180.0 + abs(atanDegrees)
-            return 270.0 + (90.0 - atanDegrees)
+        atanDegrees = degrees(atan2((self.y1-self.y0),(self.x1-self.x0)))
+        if (atanDegrees < 0):
+            return abs(atanDegrees)
+        return 180 + (180 - atanDegrees)
     
     # 0, 1, 2, 3 for up, right, down, left
     def getLineDirection(self):
@@ -220,11 +168,12 @@ class LineGraphic():
             return 3
         return 2
 
-root = tk.Tk()
-root.title("Computer Sciece Department Graphic")
-Application(master=root)
-settingsWindowConfig = tk.Toplevel(root)
-settingsWindowConfig.title("Settings")
-Settings(settingsWindowConfig)
-
-root.mainloop()
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.title("Computer Sciece Department Graphic")
+    settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False)
+    app = Application(settings=settings, master=root)
+    settingsWindowConfig = tk.Toplevel(root)
+    settingsWindowConfig.title("Settings")
+    Settings(settings=settings, master=settingsWindowConfig)
+    root.mainloop()
