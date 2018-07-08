@@ -1,6 +1,7 @@
 from math import atan2, degrees
+
 class LineGraphic():
-    def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, stipple=""):
+    def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False):
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
