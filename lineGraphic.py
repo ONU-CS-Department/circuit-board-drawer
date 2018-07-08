@@ -1,6 +1,6 @@
 from math import atan2, degrees
 class LineGraphic():
-    def __init__(self, master, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, stipple=""):
+    def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, stipple=""):
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
@@ -10,10 +10,9 @@ class LineGraphic():
         self.hasEndNode = hasEndNode
         self.hasStartModule = hasStartModule
         self.hasEndModule = hasEndModule
-        self.canvas = master
 
-    def drawLine(self, stipple=""):
-        self.canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=stipple)
+    def drawLine(self, canvas=None, stipple=""):
+        canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=stipple)
         lineDirection = self.getLineDirection()
 
         nodeSize = 16
@@ -21,15 +20,15 @@ class LineGraphic():
             nodeSize = 19
         
         if self.hasStartNode:
-            self.drawVertexShape(self.x0, self.y0, nodeSize, nodeSize, self.getOppositeDirection(lineDirection), "node", stipple)
+            self.drawVertexShape(self.x0, self.y0, nodeSize, nodeSize, self.getOppositeDirection(lineDirection), "node", stipple, canvas)
         if self.hasEndNode:
-            self.drawVertexShape(self.x1, self.y1, nodeSize, nodeSize, lineDirection, "node", stipple)
+            self.drawVertexShape(self.x1, self.y1, nodeSize, nodeSize, lineDirection, "node", stipple, canvas)
         if self.hasStartModule:
-            self.drawVertexShape(self.x0, self.y0, 16, 32, self.getOppositeDirection(lineDirection), "module", stipple)
+            self.drawVertexShape(self.x0, self.y0, 16, 32, self.getOppositeDirection(lineDirection), "module", stipple, canvas)
         if self.hasEndModule:
-            self.drawVertexShape(self.x1, self.y1, 16, 32, lineDirection, "module", stipple)
+            self.drawVertexShape(self.x1, self.y1, 16, 32, lineDirection, "module", stipple, canvas)
 
-    def drawVertexShape(self, x, y, width, height, direction, shape, stipple=""):
+    def drawVertexShape(self, x, y, width, height, direction, shape, stipple="", canvas=None):
         negator = 1
         if ((direction == 3) | (direction == 0)):
             negator *= -1
@@ -46,11 +45,11 @@ class LineGraphic():
             y1Diff = height * negator
         if (shape == "node"): # Returing not for values, but to conserve space on this t-shirt :)
             if (stipple != ""): # create_oval doesn't allow transparency, so we must use "create_polygon" to make 
-                self.canvas.create_polygon(x + x0Diff, y + y0Diff,x + x0Diff, y + y1Diff, x + x1Diff, y + y1Diff, x + x1Diff, y + y0Diff, outline=self.color, smooth=1, stipple=stipple, fill=self.color)
+                canvas.create_polygon(x + x0Diff, y + y0Diff,x + x0Diff, y + y1Diff, x + x1Diff, y + y1Diff, x + x1Diff, y + y0Diff, outline=self.color, smooth=1, stipple=stipple, fill=self.color)
             else:
-                self.canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, stipple=stipple, outline=self.color)
+                canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, stipple=stipple, outline=self.color)
         else:
-            self.canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=stipple, fill=self.color)
+            canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=stipple, fill=self.color)
         
     def getOppositeDirection(self, lineDirection):
         if (lineDirection == 0):

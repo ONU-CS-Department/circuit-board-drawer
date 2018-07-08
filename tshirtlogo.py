@@ -30,7 +30,7 @@ class Application(Canvas):
             self.curX = x
             self.curY = y
         else:
-            self.lines.append(LineGraphic(self, self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
+            self.lines.append(LineGraphic(self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
             self.refreshCanvas()
             if (self.settings.get("isContinuous")):
                 self.curX = x
@@ -50,8 +50,8 @@ class Application(Canvas):
     def mouseMotion(self, event):   # Triggered every time the mouse moves across the canvas
         if self.curX != -1:         # If the first vertex is already chosen, allow the other vertex to follow the mouse until a click event
             self.refreshCanvas()
-            line = LineGraphic(self, self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
-            line.drawLine(stipple="gray50")
+            line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
+            line.drawLine(canvas=self, stipple="gray50")
 
     def openFile(self):
         fileName = filedialog.askopenfilename()
@@ -73,7 +73,7 @@ class Application(Canvas):
 
     def drawLines(self):            # Draw all graphics to the screen in FIFO order
         for line in self.lines:
-            line.drawLine()
+            line.drawLine(canvas=self)
 
     def refreshCanvas(self):        # Clear the canvas and draw the lines
         self.clearCanvas()
