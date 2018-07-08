@@ -25,10 +25,3 @@ class Config():
     def callFunction(self, key):
         getattr(self.function, key)()
 
-config = Config(test="hello")
-def test():
-    print("Hello there")
-config.registerFunction("test", lambda: test())
-
-print(config.hasFunction("test"))
-
