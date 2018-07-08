@@ -8,7 +8,7 @@ WINDOW_HEIGHT = 400
 workingFileName = ""
 
 class Application(Canvas):
-    def __init__(self, root, settings=None, master=None):
+    def __init__(self, settings=None, master=None):
         super().__init__(master)
         self.settings = settings
         self.config(background=self.settings.get("bgColor"), width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
@@ -17,10 +17,10 @@ class Application(Canvas):
         self.curX = -1
         self.curY = -1
         self.bind('<Button-1>', self.click) # bind mouse motion to
-        root.bind('<Control-z>', self.undo)      # forward-slash
-        menubar = Menu(root)
+        master.bind('<Control-z>', self.undo)      # forward-slash
+        menubar = Menu(master)
         menubar.add_command(label="Undo", command=self.undo)
-        root.config(menu=menubar)
+        master.config(menu=menubar)
         self.pack(fill="both", expand=True)
         self.lines = []
 
