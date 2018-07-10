@@ -6,8 +6,8 @@ class Config():
 
     def set(self, key, value):
         setattr(self, key, value)
-        if (self.hasFunction(key) == True):
-            self.callFunction(key)
+        if (self.__hasFunction(key) == True):
+            self.__callFunction(key)
 
     def get(self, key):
         return getattr(self, key)
@@ -15,13 +15,13 @@ class Config():
     def registerFunction(self, key, function):
         setattr(self.function, key, function)
 
-    def hasFunction(self, key):
+    def __hasFunction(self, key):
         try:
             getattr(self.function, key)
             return True
         except AttributeError:
             return False
 
-    def callFunction(self, key):
+    def __callFunction(self, key):
         getattr(self.function, key)()
 
