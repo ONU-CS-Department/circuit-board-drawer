@@ -7,7 +7,7 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 400
 
 class MainCanvas(Canvas):
-    def __init__(self, settings=None):
+    def __init__(self, lines, settings=None):
         super().__init__()
         self.settings = settings
         self.settings.registerFunction("bgColor", self.refreshBackground)
@@ -17,7 +17,7 @@ class MainCanvas(Canvas):
         self.pack(fill="both", expand=True)
         self.curX = -1
         self.curY = -1
-        self.lines = []
+        self.lines = lines
 
     def __click(self, event):
         x, y = event.x, event.y
@@ -26,7 +26,7 @@ class MainCanvas(Canvas):
             self.curY = y
         else:
             self.lines.append(LineGraphic(self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
-            self.__refreshCanvas()
+            self.refreshCanvas()
             if (self.settings.get("isContinuous")):
                 self.curX = x
                 self.curY = y
@@ -47,7 +47,7 @@ class MainCanvas(Canvas):
 
     def __mouseMotion(self, event):   # Triggered every time the mouse moves across the canvas
         if not self.__isFirstVertex():         # If the first vertex is already chosen, allow the other vertex to follow the mouse until a click event
-            self.__refreshCanvas()
+            self.refreshCanvas()
             line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
             line.drawLine(canvas=self, stipple="gray50")
 
@@ -55,11 +55,11 @@ class MainCanvas(Canvas):
         for line in self.lines:
             line.drawLine(canvas=self)
 
-    def __refreshCanvas(self):        # Clear the canvas and draw the lines
+    def refreshCanvas(self):        # Clear the canvas and draw the lines
         self.__clearCanvas()
         self.__drawLines()
 
     def undo(self, event=None):     # Remove the previously drawn graphic
         if (self.lines):
             self.lines.pop()
-            self.__refreshCanvas()
+            self.refreshCanvas()
