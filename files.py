@@ -15,31 +15,47 @@ class FileIO():
     def openFile(self):
         self.fileName = filedialog.askopenfilename(filetypes=self.filetypes, initialdir=self.initialdir)
         data = None
-        with open(self.fileName,'rb') as file:
-            data = pickle.loads(file.read())
-        self.data.clear()
-        for lineObject in data:
-            self.data.append(lineObject)
-            self.savedData.append(lineObject)
-        self.callCallbacks()
+        try:
+            with open(self.fileName,'rb') as file:
+                data = pickle.loads(file.read())
+            self.data.clear()
+            for lineObject in data:
+                self.data.append(lineObject)
+                self.savedData.append(lineObject)
+            self.callCallbacks()
+        except FileNotFoundError:
+            print("No file was chosen.")
+        except:
+            print("An unknown error has occured.")
         
     def saveFile(self):
-        print(self.fileName)
         if self.fileName:
-            with open(self.fileName,'wb') as file:
-                file.write(pickle.dumps(self.data))
-            self.callCallbacks()
+            try:
+                with open(self.fileName,'wb') as file:
+                    file.write(pickle.dumps(self.data))
+                self.savedData = self.data.copy()
+                self.callCallbacks()
+            except FileNotFoundError:
+                print("No file was chosen")
+            except:
+                print("An unknown error has occured.")
         else:
             self.saveFileAs()
 
     def isDirty(self):
-        return False
+        return not (self.data == self.savedData)
 
     def saveFileAs(self):
         self.fileName = filedialog.asksaveasfilename(filetypes=self.filetypes, initialdir=self.initialdir)
-        with open(self.fileName,'wb') as file:
-            file.write(pickle.dumps(self.data))
-        self.callCallbacks()
+        try:
+            with open(self.fileName,'wb') as file:
+                file.write(pickle.dumps(self.data))
+            self.savedData = self.data.copy()
+            self.callCallbacks()
+        except FileNotFoundError:
+            print("No file was chosen")
+        except:
+            print("An unknown error has occured.")
 
     def callCallbacks(self):
         for callback in self.callbacks:
