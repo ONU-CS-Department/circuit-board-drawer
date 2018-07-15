@@ -41,7 +41,7 @@ if __name__ == '__main__':
     dataCache = []
     fileManager = FileIO(data)
     mainWindow = MainWindow(fileManager)
-    mainWindow.loopCallbacks(1000, [mainWindow.setTitleToFileName])
+    mainWindow.loopCallbacks(800, [mainWindow.setTitleToFileName])
     settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False)
     canvas = MainCanvas(data, settings=settings)
     fileManager.addCallbacks([mainWindow.setTitleToFileName, canvas.refreshCanvas])
