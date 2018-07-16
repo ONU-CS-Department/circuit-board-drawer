@@ -5,12 +5,15 @@ from settings import Settings
 from files import FileIO
 
 class MainWindow(Tk):
-    def __init__(self, fileManager):
+    def __init__(self, fileManager, lines):
         super().__init__()
-        self.title("Computer Sciece Department Graphic - Untitled")
         self.fileManager = fileManager
+        self.lines = lines
         self.menubar = Menu(self)
+        self.bind('<Control-s>', lambda x: fileManager.saveFile()) # bind mouse motion to
+        self.bind('<Control-z>', self.undo) # bind mouse motion to
         self.addMenuCascade("File", {"Open...":fileManager.openFile, "Save":fileManager.saveFile, "Save As":fileManager.saveFileAs})
+        self.addMenuCascade("Edit", {"Undo":self.undo})
 
     def addMenuCascade(self, label, commands):
         menu = Menu(self.menubar, tearoff=False)
@@ -36,12 +39,17 @@ class MainWindow(Tk):
             callback()
         self.after(milliseconds, lambda: self.loopCallbacks(milliseconds, callbacks))  # reschedule event in 2 seconds
 
+    def undo(self, event=None):     # Remove the previously drawn graphic
+        if (self.lines):
+            self.lines.pop()
+            self.fileManager.callCallbacks()
+
 if __name__ == '__main__':
     data = []
     dataCache = []
     fileManager = FileIO(data)
-    mainWindow = MainWindow(fileManager)
-    mainWindow.loopCallbacks(800, [mainWindow.setTitleToFileName])
+    mainWindow = MainWindow(fileManager, data)
+    mainWindow.loopCallbacks(500, [mainWindow.setTitleToFileName])
     settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False)
     canvas = MainCanvas(data, settings=settings)
     fileManager.addCallbacks([mainWindow.setTitleToFileName, canvas.refreshCanvas])

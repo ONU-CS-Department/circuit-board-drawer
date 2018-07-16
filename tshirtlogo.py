@@ -58,8 +58,3 @@ class MainCanvas(Canvas):
     def refreshCanvas(self):        # Clear the canvas and draw the lines
         self.__clearCanvas()
         self.__drawLines()
-
-    def undo(self, event=None):     # Remove the previously drawn graphic
-        if (self.lines):
-            self.lines.pop()
-            self.refreshCanvas()
