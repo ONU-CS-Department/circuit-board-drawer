@@ -44,6 +44,7 @@ class FileIO():
 
     def saveFileAs(self):
         self.fileName = filedialog.asksaveasfilename(filetypes=self.filetypes, initialdir=self.initialdir)
+        self.fileName += ".pkl"
         try:
             with open(self.fileName,'wb') as file:
                 file.write(pickle.dumps(self.data))
