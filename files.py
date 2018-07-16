@@ -21,7 +21,7 @@ class FileIO():
             self.data.clear()
             for lineObject in data:
                 self.data.append(lineObject)
-                self.savedData.append(lineObject)
+            self.setSavePoint()
             self.callCallbacks()
         except FileNotFoundError:
             print("No file was chosen.")
@@ -33,7 +33,7 @@ class FileIO():
             try:
                 with open(self.fileName,'wb') as file:
                     file.write(pickle.dumps(self.data))
-                self.savedData = self.data.copy()
+                self.setSavePoint()
                 self.callCallbacks()
             except FileNotFoundError:
                 print("No file was chosen")
@@ -42,20 +42,21 @@ class FileIO():
         else:
             self.saveFileAs()
 
-    def isDirty(self):
-        return not (self.data == self.savedData)
-
     def saveFileAs(self):
         self.fileName = filedialog.asksaveasfilename(filetypes=self.filetypes, initialdir=self.initialdir)
         try:
             with open(self.fileName,'wb') as file:
                 file.write(pickle.dumps(self.data))
-            self.savedData = self.data.copy()
+            self.setSavePoint()
             self.callCallbacks()
         except FileNotFoundError:
             print("No file was chosen")
         except:
             print("An unknown error has occured.")
+
+    def setSavePoint(self):
+        """When saving/opening a file. Set a marker for when data was last saved."""
+        self.savedData = self.data.copy()
 
     def callCallbacks(self):
         for callback in self.callbacks:
