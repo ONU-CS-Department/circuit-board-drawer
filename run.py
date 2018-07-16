@@ -45,13 +45,12 @@ class MainWindow(Tk):
             self.fileManager.callCallbacks()
 
 if __name__ == '__main__':
-    data = []
-    dataCache = []
-    fileManager = FileIO(data)
-    mainWindow = MainWindow(fileManager, data)
+    lines = []
+    fileManager = FileIO(lines)
+    mainWindow = MainWindow(fileManager, lines)
     mainWindow.loopCallbacks(500, [mainWindow.setTitleToFileName])
     settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False)
-    canvas = MainCanvas(data, settings=settings)
+    canvas = MainCanvas(lines, settings=settings)
     fileManager.addCallbacks([mainWindow.setTitleToFileName, canvas.refreshCanvas])
     settingsWindowConfig = Toplevel(mainWindow)
     settingsWindowConfig.title("Settings")
