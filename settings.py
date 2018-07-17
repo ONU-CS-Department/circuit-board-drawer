@@ -19,11 +19,11 @@ class Settings(Frame):
         self.addColorPicker(0, 'Background color:', "bgColor")
         self.addColorPicker(1, 'Draw color:', "wireColor")
 
-        self.addCheckBox(2, "hasStartNode")
-        self.addCheckBox(3, "hasEndNode")
-        self.addCheckBox(4, "hasStartModule")
-        self.addCheckBox(5, "hasEndModule")
-        self.addCheckBox(6, "isContinuous")
+        self.addCheckBox(2, "hasStartNode", "Has Start Node")
+        self.addCheckBox(3, "hasEndNode", "Has End Node")
+        self.addCheckBox(4, "hasStartModule", "Has Start Module")
+        self.addCheckBox(5, "hasEndModule", "Has End Module")
+        self.addCheckBox(6, "isContinuous", "Is Continuous")
 
     def addColorPicker(self, row, fieldLabel, settingKey):
         """Add a color picker to the frame
@@ -74,14 +74,15 @@ class Settings(Frame):
             self.settings.set(settingKey, color)
             button.configure(bg=self.settings.get(settingKey))
 
-    def addCheckBox(self, row, key):
+    def addCheckBox(self, row, key, fieldLabel):
         """Add a checkbox. When toggled, configuration variable is toggled
 
         Keyword arguments:
         row -- row to insert checkbox into
         key -- configuration variable to toggle
+        fieldLabel -- label to display to the user
         """
-        Label(self, text = key.replace("_", " ").title() + ":").grid(row = row, column = 1)
+        Label(self, text = fieldLabel + ":").grid(row = row, column = 1)
         Checkbutton(self, command=lambda: self.toggleProperty(key)).grid(row=row, column=3)
 
     def toggleProperty(self, key):
