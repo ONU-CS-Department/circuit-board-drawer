@@ -100,6 +100,27 @@ class LineGraphic():
             return 0
         return 1
 
+    def getLineDirectionPrecise(self):
+        """Use the angle of a line to determine its direction: 0, 1, 2, 3, 4, 5, 6, 7 for up, up-right, right, down-right, down, down-left, left, up-left respectively"""
+        angle = self.getLineAngle()
+        if ((angle > 337.5) or (angle <= 22.5)):
+            return 2
+        if ((angle > 22.5) and (angle <= 67.5)):
+            return 1
+        if ((angle > 67.5) and (angle <= 112.5)):
+            return 0
+        if ((angle > 112.5) and (angle <= 157.5)):
+            return 7
+        if ((angle > 157.5) and (angle <= 202.5)):
+            return 6
+        if ((angle > 202.5) and (angle <= 247.5)):
+            return 5
+        if ((angle > 247.5) and (angle <= 292.5)):
+            return 4
+        if ((angle > 292.5) and (angle <= 337.5)):
+            return 3
+        return -1
+        
     def getLineAngle(self):
         """Get the angle of the line in relation to its angle on a circle"""
         atanDegrees = degrees(atan2((self.y1-self.y0),(self.x1-self.x0)))
