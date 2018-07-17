@@ -5,7 +5,7 @@ via the "set" method.
 """
 class Config():
     def __init__(self, **kwargs):
-        """Construct the init class and assign passed in values to self
+        """Construct the object and assign passed in values to self
 
         Keyword arguments:
         kwards -- arbitrary number of keyword arguments

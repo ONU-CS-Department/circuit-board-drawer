@@ -1,3 +1,6 @@
+"""
+This module inherits the tkinter Canvas. It presents graphics to the user.
+"""
 from tkinter import Tk, Canvas, filedialog, TclError
 import json
 from lineGraphic import LineGraphic
@@ -8,6 +11,12 @@ WINDOW_HEIGHT = 400
 
 class MainCanvas(Canvas):
     def __init__(self, lines, settings=None):
+        """Construct the object
+
+        Keyword arguments:
+        lines -- array of "LineGraphic" objects
+        settings -- a Config instance (default None)
+        """
         super().__init__()
         self.settings = settings
         self.settings.registerFunction("bgColor", self.refreshBackground)
@@ -20,6 +29,11 @@ class MainCanvas(Canvas):
         self.lines = lines
 
     def __click(self, event):
+        """Add a vertex with each click. If vertex is second one, draw a line. 
+
+        Keyword arguments:
+        event -- tkinter click event
+        """
         x, y = event.x, event.y
         if self.__isFirstVertex():         # If this is the first click of the line.
             self.curX = x
@@ -35,26 +49,32 @@ class MainCanvas(Canvas):
                 self.curY = -1
 
     def __isFirstVertex(self):
+        """Returns true if a given click was the first vertex in drawing a line"""
         return (self.curX == -1)
 
     def refreshBackground(self):
+        """Refresh the background color"""
         try:
             self.config(background=self.settings.get("bgColor"), width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
         except TclError: pass
 
     def __clearCanvas(self):  # Clear all graphics from the canvas
+        """Clear all graphics from the canvas"""
         self.delete("all")
 
-    def __mouseMotion(self, event):   # Triggered every time the mouse moves across the canvas
-        if not self.__isFirstVertex():         # If the first vertex is already chosen, allow the other vertex to follow the mouse until a click event
+    def __mouseMotion(self, event):
+        """If the first vertex is already drawn, connect a pseudo-transparent line to the mouse"""
+        if not self.__isFirstVertex():
             self.refreshCanvas()
             line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
             line.drawLine(canvas=self, stipple="gray50")
 
-    def __drawLines(self):            # Draw all graphics to the screen in FIFO order
+    def __drawLines(self):
+        """Draw all lines to the screen in FIFO order"""
         for line in self.lines:
             line.drawLine(canvas=self)
 
-    def refreshCanvas(self):        # Clear the canvas and draw the lines
+    def refreshCanvas(self): 
+        """Clear the canvas and draw the lines"""
         self.__clearCanvas()
         self.__drawLines()

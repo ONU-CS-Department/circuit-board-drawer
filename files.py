@@ -84,7 +84,11 @@ class FileIO():
             callback()
 
     def addCallbacks(self, callbacks):
-        """Add callback functions"""
+        """Add callback functions
+
+        Keyword arguments:
+        callbacks -- an array of objects
+        """
         for callback in callbacks:
             self.callbacks.append(callback) 
 

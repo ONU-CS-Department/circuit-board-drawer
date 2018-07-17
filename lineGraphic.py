@@ -1,7 +1,23 @@
+"""
+This module provides a line graphic that can be drawn to a canvas with leading/trailing circular-nodes/rectangles
+"""
 from math import atan2, degrees
 
 class LineGraphic():
     def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False):
+        """Construct the object
+
+        Keyword arguments:
+        x0 -- x coordinate of first vertex
+        y0 -- y coordinate of first vertex
+        x1 -- x coordinate of second vertex
+        y1 -- y coordinate of second vertex
+        color -- line color. As a hexadecimal or English name
+        hasStartNode -- if True, adds a circular node to start of line (default False)
+        hasEndNode -- if True, adds a circular node to end of line (default False)
+        hasStartModule -- if True, adds a rectangle to start of line (default False)
+        hasEndModule -- if True, adds a rectangle to end of line (default False)
+        """
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
@@ -13,6 +29,12 @@ class LineGraphic():
         self.hasEndModule = hasEndModule
 
     def drawLine(self, canvas=None, stipple=""):
+        """Draws a line to the canvas
+
+        Keyword arguments:
+        canvas -- a tkinter Canvas instance (default None)
+        stipple -- a color to blend with the background to give impression of opacity (default "")
+        """
         canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=stipple)
         lineDirection = self.getLineDirection()
 
@@ -30,6 +52,18 @@ class LineGraphic():
             self.drawVertexShape(self.x1, self.y1, 16, 32, lineDirection, "module", stipple, canvas)
 
     def drawVertexShape(self, x, y, width, height, direction, shape, stipple="", canvas=None):
+        """Draws either a circle, rectangle, or circular polygon to canvas
+
+        Keyword arguments:
+        x -- start point x value
+        y -- start point y value
+        width -- width of shape
+        height -- height of shape
+        direction -- direction of shape (0, 1, 2, 3 for up, right, down, left, respectively)
+        shape -- name of shape to draw
+        stipple -- a color to blend with the background to give impression of opacity (default "")
+        canvas -- a tkinter Canvas instance (default None)
+        """
         negator = 1
         if ((direction == 3) | (direction == 0)):
             negator *= -1
@@ -53,6 +87,11 @@ class LineGraphic():
             canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=stipple, fill=self.color)
         
     def getOppositeDirection(self, lineDirection):
+        """Get the opposite direction of a line
+
+        Keyword arguments:
+        lineDirection -- direction of the line
+        """
         if (lineDirection == 0):
             return 2
         elif (lineDirection == 1):
@@ -61,16 +100,15 @@ class LineGraphic():
             return 0
         return 1
 
-    # Lines angle is determined by the angle between two vertexes in line
-    # Graph quadrant (in direction of circle) ranges: I: 0 to -90 exclusive, II: 90 exclusive to 0, III: 0 to -90 exclusive, IV: 90 exclusive to 0
     def getLineAngle(self):
+        """Get the angle of the line in relation to its angle on a circle"""
         atanDegrees = degrees(atan2((self.y1-self.y0),(self.x1-self.x0)))
         if (atanDegrees < 0):
             return abs(atanDegrees)
         return 180 + (180 - atanDegrees)
     
-    # 0, 1, 2, 3 for up, right, down, left
     def getLineDirection(self):
+        """Use the angle of a line to determine its direction: 0, 1, 2, 3 for up, right, down, left, respectively"""
         angle = self.getLineAngle()
         if ((angle > 45.0) & (angle < 135.0)):
             return 0
