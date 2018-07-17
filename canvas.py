@@ -3,7 +3,7 @@ This module inherits the tkinter Canvas. It presents graphics to the user.
 """
 from tkinter import Tk, Canvas, filedialog, TclError
 import json
-from lineGraphic import LineGraphic
+from line_graphic import LineGraphic
 from settings import Settings
 
 WINDOW_WIDTH = 800

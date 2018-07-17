@@ -3,7 +3,7 @@ This module holds the main window and program entry point.
 """
 from tkinter import Tk, Toplevel, Menu
 from config import Config
-from tshirtlogo import MainCanvas
+from canvas import MainCanvas
 from settings import Settings
 from files import FileIO
 
