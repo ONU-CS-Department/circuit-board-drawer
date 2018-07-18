@@ -3,7 +3,7 @@ This module inherits the tkinter Canvas. It presents graphics to the user.
 """
 from tkinter import Tk, Canvas, filedialog, TclError
 import json
-from line_graphic import LineGraphic
+from line_graphic import LineGraphic, getStraightenedVertexCoords
 from settings import Settings
 
 WINDOW_WIDTH = 800
@@ -39,6 +39,10 @@ class MainCanvas(Canvas):
             self.curX = x
             self.curY = y
         else:
+            if (self.settings.get("useStraightLines")):
+                coords = getStraightenedVertexCoords(self.curX, self.curY, x, y)
+                x = coords[0]
+                y = coords[1]
             self.lines.append(LineGraphic(self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
             self.refreshCanvas()
             if (self.settings.get("isContinuous")):
@@ -66,8 +70,13 @@ class MainCanvas(Canvas):
         """If the first vertex is already drawn, connect a pseudo-transparent line to the mouse"""
         if not self.__isFirstVertex():
             self.refreshCanvas()
+            if (self.settings.get("useStraightLines")):
+                coords = getStraightenedVertexCoords(self.curX, self.curY, event.x, event.y)
+                event.x = coords[0]
+                event.y = coords[1]
             line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
             line.drawLine(canvas=self, stipple="gray50")
+        
 
     def __drawLines(self):
         """Draw all lines to the screen in FIFO order"""

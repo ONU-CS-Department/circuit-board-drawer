@@ -80,7 +80,7 @@ if __name__ == '__main__':
     mainWindow = MainWindow(fileManager, lines)
     # Set window title to refresh every 0.5 seconds
     mainWindow.loopCallbacks(500, [mainWindow.setTitleToFileName])
-    settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False)
+    settings = Config(bgColor="#005500", wireColor="#C5A953", hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, isContinuous=False, useStraightLines=False)
     canvas = MainCanvas(lines, settings=settings)
     fileManager.addCallbacks([mainWindow.setTitleToFileName, canvas.refreshCanvas])
     settingsWindowConfig = Toplevel(mainWindow)

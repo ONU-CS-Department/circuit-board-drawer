@@ -138,3 +138,25 @@ class LineGraphic():
         if ((angle >= 135.0) & (angle <= 225.0)):
             return 3
         return 2
+
+def getStraightenedVertexCoords(x0, y0, x1, y1):
+    preciseDirection = LineGraphic(x0, y0, x1, y1, "").getLineDirectionPrecise()
+
+    if (preciseDirection == 0):
+        x1 = x0
+    if (preciseDirection == 1):
+        y1 = (y0 - (x1-x0))
+    if (preciseDirection == 2):
+        y1 = y0
+    if (preciseDirection == 3):
+        y1 = (y0 + (x1-x0))
+    if (preciseDirection == 4):
+        x1 = x0
+    if (preciseDirection == 5):
+        y1 = (y0 - (x1-x0))
+    if (preciseDirection == 6):
+        y1 = y0
+    if (preciseDirection == 7):
+        y1 = (y0 + (x1-x0))
+    return [x1, y1]
+
