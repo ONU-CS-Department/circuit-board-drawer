@@ -16,15 +16,13 @@ class FileIO():
         """
         self.fileName = fileName
         self.filetypes = (("Pickle files","*.pkl"),("all files","*.*"))
-        user = getpass.getuser()
-        self.initialdir = "Designs"
         self.data = data
         self.savedData = self.data.copy()
         self.callbacks = callbacks
         
     def openFile(self):
         """Open a file for writing"""
-        self.fileName = filedialog.askopenfilename(filetypes=self.filetypes, initialdir=self.initialdir)
+        self.fileName = filedialog.askopenfilename(filetypes=self.filetypes)
         data = None
         try:
             with open(self.fileName,'rb') as file:
@@ -58,7 +56,7 @@ class FileIO():
 
     def saveFileAs(self):
         """Choose a filename, then write to file"""
-        self.fileName = filedialog.asksaveasfilename(filetypes=self.filetypes, initialdir=self.initialdir)
+        self.fileName = filedialog.asksaveasfilename(filetypes=self.filetypes)
         self.fileName += ".pkl"
         try:
             with open(self.fileName,'wb') as file:
