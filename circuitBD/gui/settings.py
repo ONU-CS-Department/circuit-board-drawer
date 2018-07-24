@@ -2,7 +2,7 @@
 This module is a Settings tkinter frame that holds checkboxes
 and color pickers to edit value of config variables.
 """
-from tkinter import Button, Label, Entry, StringVar, Frame, Checkbutton, colorchooser
+from tkinter import Button, Label, Entry, LEFT, StringVar, Frame, X, Checkbutton, HORIZONTAL, Menu, filedialog, colorchooser
 
 class Settings(Frame):
     def __init__(self, settings=None, master=None):
