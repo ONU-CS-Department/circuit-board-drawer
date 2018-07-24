@@ -1,7 +1,7 @@
 """
 This module inherits the tkinter Canvas. It presents graphics to the user.
 """
-from tkinter import Canvas, TclError
+from tkinter import Tk, Canvas, filedialog, TclError
 import json
 from circuitBD.gui.line_graphic import LineGraphic, getStraightenedVertexCoords
 from circuitBD.gui.settings import Settings
