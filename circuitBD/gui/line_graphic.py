@@ -140,6 +140,14 @@ class LineGraphic():
         return 2
 
 def getStraightenedVertexCoords(x0, y0, x1, y1):
+    """Get adjusted line coords for a straightened line
+    
+    Keyword arguments:
+    x0 -- x coordinate of first vertex
+    y0 -- y coordinate of first vertex
+    x1 -- x coordinate of second vertex
+    y1 -- y coordinate of second vertex
+    """
     preciseDirection = LineGraphic(x0, y0, x1, y1, "").getLineDirectionPrecise()
 
     if (preciseDirection == 0):
