@@ -43,7 +43,7 @@ class MainCanvas(Canvas):
                 coords = getStraightenedVertexCoords(self.curX, self.curY, x, y)
                 x = coords[0]
                 y = coords[1]
-            self.lines.append(LineGraphic(self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule")))
+            self.lines.append(LineGraphic(self.curX, self.curY, x, y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"), self.settings.get("size")))
             self.refreshCanvas()
             if (self.settings.get("isContinuous")):
                 self.curX = x
@@ -74,7 +74,7 @@ class MainCanvas(Canvas):
                 coords = getStraightenedVertexCoords(self.curX, self.curY, event.x, event.y)
                 event.x = coords[0]
                 event.y = coords[1]
-            line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"))
+            line = LineGraphic(self.curX, self.curY, event.x, event.y, self.settings.get("wireColor"), self.settings.get("hasStartNode"), self.settings.get("hasEndNode"), self.settings.get("hasStartModule"), self.settings.get("hasEndModule"), self.settings.get("size"))
             line.drawLine(canvas=self, stipple="gray50")
         
 

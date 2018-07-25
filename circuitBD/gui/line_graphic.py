@@ -4,7 +4,7 @@ This module provides a line graphic that can be drawn to a canvas with leading/t
 from math import atan2, degrees
 
 class LineGraphic():
-    def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False):
+    def __init__(self, x0, y0, x1, y1, color, hasStartNode=False, hasEndNode=False, hasStartModule=False, hasEndModule=False, size=8):
         """Construct the object
 
         Keyword arguments:
@@ -12,6 +12,7 @@ class LineGraphic():
         y0 -- y coordinate of first vertex
         x1 -- x coordinate of second vertex
         y1 -- y coordinate of second vertex
+        size -- size of lines, nodes, and modules
         color -- line color. As a hexadecimal or English name
         hasStartNode -- if True, adds a circular node to start of line (default False)
         hasEndNode -- if True, adds a circular node to end of line (default False)
@@ -22,6 +23,7 @@ class LineGraphic():
         self.y0 = y0
         self.x1 = x1
         self.y1 = y1
+        self.size = int(size)
         self.color = color
         self.hasStartNode = hasStartNode
         self.hasEndNode = hasEndNode
@@ -35,23 +37,23 @@ class LineGraphic():
         canvas -- a tkinter Canvas instance (default None)
         stipple -- a color to blend with the background to give impression of opacity (default "")
         """
-        canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=6, stipple=stipple)
+        canvas.create_line(self.x0, self.y0, self.x1, self.y1, fill=self.color, width=self.size, stipple=stipple)
         lineDirection = self.getLineDirection()
 
-        nodeSize = 16
-        if (stipple != ""): # when node is not transparent
-            nodeSize = 19
+        
+        # if (stipple != ""): # when node is not transparent
+           # nodeSize = 19
         
         if self.hasStartNode:
-            self.drawVertexShape(self.x0, self.y0, nodeSize, nodeSize, self.getOppositeDirection(lineDirection), "node", stipple, canvas)
+            self.drawVertexShape(self.x0, self.y0, self.size, self.getOppositeDirection(lineDirection), "node", stipple, canvas)
         if self.hasEndNode:
-            self.drawVertexShape(self.x1, self.y1, nodeSize, nodeSize, lineDirection, "node", stipple, canvas)
+            self.drawVertexShape(self.x1, self.y1, self.size, lineDirection, "node", stipple, canvas)
         if self.hasStartModule:
-            self.drawVertexShape(self.x0, self.y0, 16, 32, self.getOppositeDirection(lineDirection), "module", stipple, canvas)
+            self.drawVertexShape(self.x0, self.y0, self.size, self.getOppositeDirection(lineDirection), "module", stipple, canvas)
         if self.hasEndModule:
-            self.drawVertexShape(self.x1, self.y1, 16, 32, lineDirection, "module", stipple, canvas)
+            self.drawVertexShape(self.x1, self.y1, self.size, lineDirection, "module", stipple, canvas)
 
-    def drawVertexShape(self, x, y, width, height, direction, shape, stipple="", canvas=None):
+    def drawVertexShape(self, x, y, size, direction, shape, stipple="", canvas=None):
         """Draws either a circle, rectangle, or circular polygon to canvas
 
         Keyword arguments:
@@ -64,6 +66,17 @@ class LineGraphic():
         stipple -- a color to blend with the background to give impression of opacity (default "")
         canvas -- a tkinter Canvas instance (default None)
         """
+        if (stipple != ""): # when node is not transparent
+            size += 2
+        width = size
+        height = size
+        if (shape == "module"):
+            width = size * 2
+            height = size * 4
+        elif (shape == "node"):
+            width = size * 2
+            height = size * 2
+    
         negator = 1
         if ((direction == 3) | (direction == 0)):
             negator *= -1
@@ -82,7 +95,7 @@ class LineGraphic():
             if (stipple != ""): # create_oval doesn't allow transparency, so we must use "create_polygon" to make 
                 canvas.create_polygon(x + x0Diff, y + y0Diff,x + x0Diff, y + y1Diff, x + x1Diff, y + y1Diff, x + x1Diff, y + y0Diff, outline=self.color, smooth=1, stipple=stipple, fill=self.color)
             else:
-                canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=6, outline=self.color)
+                canvas.create_oval(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, width=width*(1.0/3.5), outline=self.color)
         else:
             canvas.create_rectangle(x + x0Diff, y + y0Diff, x + x1Diff, y + y1Diff, outline=self.color, stipple=stipple, fill=self.color)
         

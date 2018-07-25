@@ -2,7 +2,7 @@
 This module is a Settings tkinter frame that holds checkboxes
 and color pickers to edit value of config variables.
 """
-from tkinter import Button, Label, Entry, LEFT, StringVar, Frame, X, Checkbutton, HORIZONTAL, Menu, filedialog, colorchooser
+from tkinter import Button, Label, Entry, StringVar, Scale, Frame, X, Checkbutton, HORIZONTAL, Menu, filedialog, colorchooser
 
 class Settings(Frame):
     def __init__(self, settings=None, master=None):
@@ -24,6 +24,14 @@ class Settings(Frame):
         self.addCheckBox(4, "hasStartModule", "Has Start Module")
         self.addCheckBox(5, "hasEndModule", "Has End Module")
         self.addCheckBox(6, "isContinuous", "Is Continuous")
+        self.addCheckBox(7, "useStraightLines", "Use Straight Lines")
+        self.addScale(8, 1, 50, "Graphic Size", "size")
+
+    def addScale(self, row, start, end, fieldLabel, settingKey):
+        Label(self, text=fieldLabel + ":").grid(row=row, column=1)
+        scale = Scale(self, from_=start, to=end, orient=HORIZONTAL, command=lambda value, settingKey=settingKey: self.settings.set(settingKey, str(value)))
+        scale.set(self.settings.get(settingKey))
+        scale.grid(row=row, column=3)
 
     def addColorPicker(self, row, fieldLabel, settingKey):
         """Add a color picker to the frame
